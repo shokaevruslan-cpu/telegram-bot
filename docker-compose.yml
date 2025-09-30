@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    container_name: telegram_psy_bot
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app             # весь проект внутрь контейнера
+      - ./video:/app/video # пробрасываем папку с видео
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+
+  db:
+    image: postgres:15
+    container_name: bot_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: bot_db
+      POSTGRES_USER: bot_user
+      POSTGRES_PASSWORD: bot_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+
+volumes:
+  pgdata:
